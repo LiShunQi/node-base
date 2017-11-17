@@ -1,9 +1,9 @@
 var express = require('express');
 var app = express();
+app.use(require('body-parser')());
 var routes = require('./routes/index');
 
 app.set('port',process.env.Port || 3000);
-
 
 //静态资源目录
 app.use(express.static(__dirname + '/public'));
