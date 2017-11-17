@@ -3,8 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>about</title>
+    <link rel="stylesheet" href="venders/layui/css/layui.css">
 </head>
 <body>
 <h1>about</h1>
+
+<div>
+    <h1>file upload</h1>
+    <button type="button" class="layui-btn" id="test1">
+        <i class="layui-icon">&#xe67c;</i>上传图片
+    </button>
+</div>
+<script src="venders/layui/layui.js"></script>
+<script>
+    layui.use(['jquery','layer','upload'],function () {
+        var $ = layui.jquery,
+            layer = layui.layer,
+            upload = layui.upload;
+
+        var uploadInst = upload.render({
+            elem: '#test1' //绑定元素
+            ,url: '/uploadFile' //上传接口
+            ,done: function(res){
+                layer.msg('success!')
+                //上传完毕回调
+            }
+            ,error: function(){
+                layer.msg('error!')
+                //请求异常回调
+            }
+        });
+    })
+</script>
 </body>
 </html>

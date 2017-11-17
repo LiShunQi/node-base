@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express();
-app.use(require('body-parser')());
+app.use(require('body-parser')());//处理表单上传数据
 var routes = require('./routes/index');
 
 app.set('port',process.env.Port || 3000);
