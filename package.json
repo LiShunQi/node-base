@@ -1,0 +1,18 @@
+{
+  "name": "node-base",
+  "version": "1.0.0",
+  "description": "node learn",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "node",
+    "express"
+  ],
+  "author": "lsq",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.2"
+  }
+}
