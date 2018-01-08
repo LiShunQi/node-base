@@ -8,11 +8,6 @@ var express = require('express');
 var router = express.Router();
 var formidable = require('formidable');//处理上传的文件
 
-//首页
-router.get('/', function(req, res){
-    res.type('text/plain');
-    res.send('Index home');
-});
 //test Ajax\
 router.post('/testAjax',function (req,res) {
     console.log(req.body);
