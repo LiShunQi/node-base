@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>upload</title>
+</head>
+<body>
+<!--form + iframe 无刷新文件上传-->
+    <form id="upload-form" name="upload-form" action="/formUpload" method = 'post' enctype="multipart/form-data">
+        <input type="file" id="upload" name="upload">
+        <input type="submit" value="submit" id="submit">
+    </form>
+    <hr>
+<!--ajax + FormData 文件上传-->
+    <div>
+        <input type="file" id="ajax-upload" name="ajax-upload" multiple="multiple">
+        <button id="ajax-btn">ajaxUpload</button>
+        <div class="showbox" id="showbox">
+
+        </div>
+    </div>
+
+<script>
+    /*form + iframe 上传文件*/
+    var form = document.getElementById('upload-form');
+    var submit = document.getElementById('submit');
+
+    submit.onclick = function () {
+        var seed = Math.floor(Math.random() * 1000 );
+        var id = 'uploader-iframe-' + seed;
+        var callback = 'uploader-cb-' + seed;
+        var iframe = document.createElement('iframe');
+        iframe.id = id;
+        iframe.name = id;
+        iframe.style.display = 'none';
+        var url = form.action;
+        iframe.src = url + '?iframe=' + callback;
+        form.target = id;
+        form.appendChild(iframe);
+
+       iframe.onload = function () {
+           debugger;
+            var responseText = this.contentDocument.body.innerText;
+            var responseData = JSON.parse(responseText) || {};
+            iframe.parentNode.removeChild(iframe);
+            console.log(responseData);
+       }
+    }
+</script>
+<script>
+    /*ajax + FormData 文件上传*/
+    var fileInput = document.getElementById('ajax-upload');
+    var btn = document.getElementById('ajax-btn');
+    var showbox = document.getElementById('showbox');
+
+    btn.onclick = function () {
+        var formData = new FormData();
+        var files = fileInput.files;
+        console.log(files);
+        for(var i = 0; i < files.length; i++){
+            formData.append('upload2',files[i]);
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('post','/ajaxforformdata',true);
+        xhr.send(formData);
+
+        xhr.onreadystatechange = function () {
+            if(xhr.readyState === 4 && xhr.status === 200){
+                var data = JSON.parse(xhr.responseText);
+//                var data = xhr.responseText;
+                console.log(data.param_file);
+                var html = '';
+                for(var i = 0;i < data.param_file.length; i++){
+                    html += '<img style="width:200px;height: 200px" src="'+ data.param_file[i].path +'">'
+                }
+                showbox.innerHTML = html;
+            }else{
+                console.log(xhr.status);
+            }
+        }
+    }
+</script>
+</body>
+</html>
