@@ -3,9 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>upload</title>
+    <style>
+        h1{
+            font-size: 0px;
+        }
+        #holder {
+            border: 5px dashed #ccc;
+            min-height: 200px;
+            width: 300px;
+        }
+        #holder.hover{
+            border: 5px dashed #0c0;
+        }
+    </style>
 </head>
 <body>
 <!--form + iframe 无刷新文件上传-->
+    <h1>form + iframe 无刷新文件上传</h1>
     <form id="upload-form" name="upload-form" action="/formUpload" method = 'post' enctype="multipart/form-data">
         <input type="file" id="upload" name="upload">
         <input type="submit" value="submit" id="submit">
@@ -13,13 +27,56 @@
     <hr>
 <!--ajax + FormData 文件上传-->
     <div>
+        <h1>ajax + FormData 文件上传,及progress</h1>
         <input type="file" id="ajax-upload" name="ajax-upload" multiple="multiple">
         <button id="ajax-btn">ajaxUpload</button>
         <div class="showbox" id="showbox">
 
         </div>
     </div>
+    <div class="jd">
+        <progress id="progress" min="0" max="100" value="0">0</progress>
+    </div>
 
+    <hr>
+    <!--上传预览-->
+    <h1>上传预览</h1>
+    <div>
+        <input type="file" id="preReader" name="preReader">
+        <div class="prebox" id="prebox">
+
+        </div>
+    </div>
+
+    <hr>
+    <!--拖拽上传-->
+    <h1>拖拽上传</h1>
+    <div class="holder" id="holder">
+
+    </div>
+
+<script>
+    function ajax(method,url,data,callback) {
+        var xhr;
+        if(window.XMLHttpRequest){
+            xhr = new XMLHttpRequest();
+        }else{
+            xhr = new ActiveXObject('Microsoft.XMLHTTP');
+        }
+
+        xhr.onreadystatechange = function () {
+           if(xhr.readyState === 4){
+               if(xhr.status === 200){
+                   callback();
+               }else{
+                   alert('请求失败');
+               }
+           }
+        };
+        xhr.open(method,url,true);
+        xhr.send(data);
+    }
+</script>
 <script>
     /*form + iframe 上传文件*/
     var form = document.getElementById('upload-form');
@@ -52,33 +109,120 @@
     var fileInput = document.getElementById('ajax-upload');
     var btn = document.getElementById('ajax-btn');
     var showbox = document.getElementById('showbox');
+    var progress = document.getElementById('progress');
 
     btn.onclick = function () {
         var formData = new FormData();
         var files = fileInput.files;
-        console.log(files);
         for(var i = 0; i < files.length; i++){
-            formData.append('upload2',files[i]);
+            formData.append('file[]',files[i]);
         }
 
         var xhr = new XMLHttpRequest();
-        xhr.open('post','/ajaxforformdata',true);
-        xhr.send(formData);
 
-        xhr.onreadystatechange = function () {
-            if(xhr.readyState === 4 && xhr.status === 200){
+        //上传进度
+        xhr.upload.onprogress = function (event) {
+            //要将xhr.send方法写在下方才会触发
+            console.log('event' + event);
+            if(event.lengthComputable){
+                var complete = (event.loaded / event.total * 100 || 0);
+                progress.value = progress.innerHTML = complete;
+            }
+        };
+        xhr.onload = function () {
+            if(xhr.status === 200){
                 var data = JSON.parse(xhr.responseText);
-//                var data = xhr.responseText;
-                console.log(data.param_file);
                 var html = '';
                 for(var i = 0;i < data.param_file.length; i++){
-                    html += '<img style="width:200px;height: 200px" src="'+ data.param_file[i].path +'">'
+                    html += '<img style="width:100px;height: 100px" src="'+ data.param_file[i].path +'">'
                 }
                 showbox.innerHTML = html;
-            }else{
-                console.log(xhr.status);
+            }else {
+                alet('shibai');
+            }
+        };
+
+        xhr.open('post','/ajaxforformdata',true);
+        xhr.send(formData);
+//        xhr.onreadystatechange = function () {
+//            if(xhr.readyState === 4 && xhr.status === 200){
+//                var data = JSON.parse(xhr.responseText);
+//                var html = '';
+//                for(var i = 0;i < data.param_file.length; i++){
+//                    html += '<img style="width:100px;height: 100px" src="'+ data.param_file[i].path +'">'
+//                }
+//                showbox.innerHTML = html;
+//            }else{
+//                console.log(xhr.status);
+//            }
+//        };
+    }
+</script>
+<script>
+    var preReader = document.getElementById('preReader');
+    var prebox = document.getElementById('prebox');
+    preReader.onchange = function () {
+        var file = this.files;
+        if(typeof FileReader !== undefined && file){
+            var reader = new FileReader();
+            var accept = {
+                'image/png': true,
+                'image/jpeg': true,
+                'image/jpg': true
+            };
+            reader.onloadstart = function () {
+              console.log('开始读取。。');
+            };
+            reader.onabort = function () {
+              console.log('取消读取')
+            };
+            reader.onerror = function () {
+                alert('error');
+            };
+            reader.onprogress = function () {
+                console.log('读取中...')
+            };
+            reader.onload = function (event) {
+                console.log('读取成功。。');
+                var image = new Image();
+                image.width = 400;
+                image.height = 400;
+                image.src = event.target.result;
+                prebox.appendChild(image);
+            };
+            for(var i = 0;i < file.length; i++){
+                if(accept[file[i].type]){
+                    reader.readAsDataURL(file[i])
+                }
             }
         }
+    }
+</script>
+<script>
+    var holder = document.getElementById('holder');
+    if('draggable' in document.createElement('span')){
+        holder.ondragover = function () {
+            this.className = 'hover';
+            return false;
+        };
+        holder.ondragend = function () {
+          this.className = '';
+          return false;
+        };
+        holder.ondrop = function (e) {
+            e.preventDefault();
+            this.className = '';
+            var data = e.dataTransfer.files;
+            var formdata = new FormData();
+            for(var i = 0; i < data.length; i++){
+                formdata.append('file[]',data[i]);
+            }
+            ajax('POST','/ajaxforformdata',formdata,function () {
+                console.log('上传成功！');
+            })
+        }
+    }else{
+        alert('你的浏览器不支持h5拖动');
     }
 </script>
 </body>
